@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Hundertjährliches Hochwasser</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(to bottom, #0f172a, #1e3a5f);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+
+    .year {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 18px;
+    }
+
+    .dice {
+      width: 210px;
+      height: 210px;
+      margin: 0 auto 28px;
+      border-radius: 28px;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.12);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 4.5rem;
+      font-weight: 800;
+
+      backdrop-filter: blur(8px);
+
+      transition: transform 0.15s ease;
+      box-shadow:
+        0 10px 30px rgba(0,0,0,0.35),
+        inset 0 0 25px rgba(255,255,255,0.03);
+    }
+
+    .rolling {
+      animation: shake 0.45s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: rotate(0deg) scale(1); }
+      20% { transform: rotate(-6deg) scale(1.04); }
+      40% { transform: rotate(6deg) scale(1.04); }
+      60% { transform: rotate(-5deg) scale(1.04); }
+      80% { transform: rotate(5deg) scale(1.04); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+
+      background: white;
+      color: #0f172a;
+
+      transition: all 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .result {
+      margin-top: 28px;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #dbeafe;
+      min-height: 100px;
+    }
+
+    .flood {
+      animation: floodFlash 1s ease;
+    }
+
+    @keyframes floodFlash {
+      0% {
+        background: linear-gradient(to bottom, #0f172a, #1e3a5f);
+      }
+      50% {
+        background: linear-gradient(to bottom, #0ea5e9, #2563eb);
+      }
+      100% {
+        background: linear-gradient(to bottom, #0f172a, #1e3a5f);
+      }
+    }
+
+    .info {
+      margin-top: 20px;
+      color: #bfdbfe;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .small {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <h1>Hundertjährliches Hochwasser</h1>
+
+    <div class="subtitle">
+      Ein hundertjährliches Hochwasser bedeutet:
+      In jedem Jahr besteht eine Wahrscheinlichkeit von 1 %.
+    </div>
+
+    <div class="year" id="year">
+      Jahr 1
+    </div>
+
+    <div class="dice" id="dice">
+      ?
+    </div>
+
+    <button id="rollButton">
+      Jahr würfeln
+    </button>
+
+    <div class="result" id="result">
+      Würfle, um die Jahre zu simulieren.
+    </div>
+
+    <div class="info small">
+      Jede Zahl von 1–100 ist gleich wahrscheinlich.
+      Bei 100 tritt das Hochwasser ein.
+    </div>
+
+  </div>
+
+  <script>
+    let year = 1;
+    let finished = false;
+
+    const dice = document.getElementById("dice");
+    const result = document.getElementById("result");
+    const yearText = document.getElementById("year");
+    const button = document.getElementById("rollButton");
+
+    button.addEventListener("click", rollYear);
+
+    function rollYear() {
+
+      if (finished) {
+        restart();
+        return;
+      }
+
+      dice.classList.add("rolling");
+
+      let animationCount = 0;
+
+      const animation = setInterval(() => {
+        dice.textContent =
+          Math.floor(Math.random() * 100) + 1;
+
+        animationCount++;
+
+        if (animationCount > 12) {
+
+          clearInterval(animation);
+
+          const roll =
+            Math.floor(Math.random() * 100) + 1;
+
+          dice.textContent = roll;
+
+          dice.classList.remove("rolling");
+
+          if (roll === 100) {
+
+            finished = true;
+
+            document.body.classList.add("flood");
+
+            setTimeout(() => {
+              document.body.classList.remove("flood");
+            }, 1000);
+
+            result.innerHTML = `
+              <h2>🌊 Hochwasser</h2>
+
+              Das hundertjährliche Hochwasser
+              trat nach <strong>${year}</strong> Jahren ein.
+              <br><br>
+
+              Obwohl es „hundertjährlich“ heißt,
+              besteht die Wahrscheinlichkeit
+              jedes Jahr erneut.
+            `;
+
+            button.textContent = "Nochmal simulieren";
+
+          } else {
+
+            result.innerHTML = `
+              Jahr ${year}: Kein Hochwasser.
+            `;
+
+            year++;
+            yearText.textContent = `Jahr ${year}`;
+          }
+        }
+
+      }, 45);
+    }
+
+    function restart() {
+      year = 1;
+      finished = false;
+
+      dice.textContent = "?";
+
+      yearText.textContent = "Jahr 1";
+
+      result.innerHTML = `
+        Würfle, um die Jahre zu simulieren.
+      `;
+
+      button.textContent = "Jahr würfeln";
+    }
+  </script>
+
+</body>
+</html>
